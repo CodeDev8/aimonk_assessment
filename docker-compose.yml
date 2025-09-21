@@ -1,0 +1,33 @@
+services:
+  ai_backend:
+    build: ./ai_backend
+    container_name: ai_backend
+    ports:
+      - ${AI_BACKEND_PORT:-8001}:8000
+    volumes:
+      - ${OUTPUT_DIR:-./outputs}:/app/outputs
+
+  ui_backend:
+    build: ./ui_backend
+    container_name: ui_backend
+    depends_on:
+      - ai_backend
+    ports:
+      - ${UI_BACKEND_PORT:-8002}:8000
+    environment:
+      - AI_BACKEND_HOST=ai_backend
+      - AI_BACKEND_PORT=8000
+  
+  streamlit_app:
+    build: ./streamlit_app
+    container_name: streamlit_app
+    depends_on:
+      - ui_backend
+    ports:
+      - ${STREAMLIT_PORT:-8003}:8501
+    environment:
+      - UI_BACKEND_HOST=ui_backend
+      - UI_BACKEND_PORT=8000
+      - ${OUTPUT_DIR:-./outputs}:/app/outputs
+    volumes:
+      - ${OUTPUT_DIR:-./outputs}:/app/outputs
